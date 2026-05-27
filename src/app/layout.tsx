@@ -43,7 +43,9 @@ export default function RootLayout({
       className={`${playfair.variable} ${inter.variable} h-full`}
       suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }
