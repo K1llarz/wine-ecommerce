@@ -85,9 +85,9 @@ export async function listAdminProducts(filters: {
   if (filters.status && filters.status !== "ALL") where.status = filters.status;
   if (filters.q) {
     where.OR = [
-      { name: { contains: filters.q } },
-      { sku: { contains: filters.q } },
-      { producer: { contains: filters.q } },
+      { name: { contains: filters.q, mode: "insensitive" } },
+      { sku: { contains: filters.q, mode: "insensitive" } },
+      { producer: { contains: filters.q, mode: "insensitive" } },
     ];
   }
   return db.product.findMany({

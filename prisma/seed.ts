@@ -1,19 +1,13 @@
 import "dotenv/config";
-import path from "node:path";
 import bcrypt from "bcryptjs";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 
-// ── DB connection (mirrors src/lib/db.ts; kept self-contained so the seed runs
-// under tsx without TS path-alias resolution) ────────────────────────────────
-function resolveSqlitePath(url: string | undefined): string {
-  const raw = (url ?? "file:./prisma/dev.db").replace(/^file:/, "");
-  if (raw === ":memory:") return raw;
-  return path.resolve(process.cwd(), raw);
-}
-const adapter = new PrismaBetterSqlite3({
-  url: resolveSqlitePath(process.env.DATABASE_URL),
-});
+// ── DB connection (Postgres/Supabase). Seeding does bulk writes, so prefer the
+// direct connection (DIRECT_URL, port 5432) when available, falling back to the
+// pooled runtime URL. ─────────────────────────────────────────────────────────
+const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+const adapter = new PrismaPg({ connectionString });
 const db = new PrismaClient({ adapter });
 
 // ── tiny helpers (inlined to avoid alias imports) ─────────────────────────────

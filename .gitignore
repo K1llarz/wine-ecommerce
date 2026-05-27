@@ -43,7 +43,8 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# local SQLite database
+# local SQLite database (legacy — project now uses Postgres/Supabase)
 prisma/*.db
 prisma/*.db-journal
 *.db
+*.db-journal

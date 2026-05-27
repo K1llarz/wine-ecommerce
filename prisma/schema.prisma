@@ -1,12 +1,17 @@
 // Wine E-Commerce — Prisma schema
-// Dev runs on SQLite; the modeling is kept Postgres-portable:
-//   - No native `enum`s or scalar lists (unsupported on SQLite). Enum-like
-//     columns are `String` with allowed values documented inline and enforced
-//     in the app layer via Zod (see src/lib/constants.ts).
+// Runs on PostgreSQL (Supabase). Modeling notes:
+//   - Enum-like columns are `String` with allowed values documented inline and
+//     enforced in the app layer via Zod (see src/lib/constants.ts). Kept as
+//     strings (not native Postgres enums) so adding a value needs no migration.
 //   - Money is stored as integer cents to avoid float/Decimal issues.
 //   - JSON payloads (address snapshots) are stored as TEXT holding JSON.
-// To move to Postgres: switch the datasource provider to "postgresql",
-// optionally promote the documented String enums to real `enum`s, and migrate.
+//
+// Connections (Supabase → Project Settings → Database → Connection string).
+// In Prisma 7, connection URLs live OUTSIDE the schema:
+//   - Runtime: the app passes a pg driver adapter to PrismaClient using
+//     DATABASE_URL (Transaction pooler, port 6543) — see src/lib/db.ts.
+//   - Migrations: prisma.config.ts sets datasource.url to DIRECT_URL
+//     (Direct connection, port 5432); PgBouncer can't run migrations.
 
 generator client {
   provider = "prisma-client"
@@ -14,7 +19,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

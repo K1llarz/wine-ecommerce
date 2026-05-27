@@ -1,27 +1,17 @@
-import path from "node:path";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
-// Prisma 7 uses driver adapters at runtime. For SQLite we use better-sqlite3.
-// The adapter wants a raw filesystem path (not a `file:` URL), and we resolve
-// relative paths against the project root so the app opens the same database
-// file the Prisma CLI created (see prisma.config.ts).
-function resolveSqlitePath(url: string | undefined): string {
-  const fallback = "file:./prisma/dev.db";
-  const raw = (url ?? fallback).replace(/^file:/, "");
-  if (raw === ":memory:") return raw;
-  return path.resolve(process.cwd(), raw);
-}
-
+// Prisma 7 uses driver adapters at runtime. We connect to Postgres (Supabase)
+// through node-postgres. At runtime we use DATABASE_URL — the Supabase
+// Transaction pooler (port 6543) — which is what works on serverless platforms
+// like Vercel. Migrations use DIRECT_URL (see prisma/schema.prisma).
 function createPrismaClient() {
-  const adapter = new PrismaBetterSqlite3({
-    url: resolveSqlitePath(process.env.DATABASE_URL),
-  });
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
   return new PrismaClient({ adapter });
 }
 
-// Reuse a single client across hot reloads in development to avoid exhausting
-// connections / re-opening the SQLite file on every change.
+// Reuse a single client across hot reloads / serverless invocations to avoid
+// exhausting database connections.
 const globalForPrisma = globalThis as unknown as {
   prisma: ReturnType<typeof createPrismaClient> | undefined;
 };
