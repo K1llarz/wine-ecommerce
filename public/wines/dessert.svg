@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" role="img" aria-label="Dessert wine bottle">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="80%">
+      <stop offset="0%" stop-color="#332617"/>
+      <stop offset="100%" stop-color="#140e08"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e6ad4f"/>
+      <stop offset="45%" stop-color="#cf9233"/>
+      <stop offset="55%" stop-color="#b97c22"/>
+      <stop offset="100%" stop-color="#925e16"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" fill="url(#bg)"/>
+  <g>
+    <rect x="280" y="110" width="40" height="70" rx="5" fill="#241608"/>
+    <path d="M283 160 h34 v150 q40 22 36 84 v258 q0 24 -24 24 h-58 q-24 0 -24 -24 v-258 q-4 -62 36 -84 z" fill="url(#glass)"/>
+    <rect x="252" y="486" width="96" height="140" rx="4" fill="#f6f1e6"/>
+    <rect x="252" y="486" width="96" height="34" rx="4" fill="#c8a24b"/>
+    <line x1="270" y1="566" x2="330" y2="566" stroke="#9a6a1c" stroke-width="3"/>
+    <line x1="276" y1="586" x2="324" y2="586" stroke="#b9b1a3" stroke-width="3"/>
+    <rect x="268" y="160" width="8" height="492" rx="4" fill="#ffffff" opacity="0.16"/>
+  </g>
+</svg>

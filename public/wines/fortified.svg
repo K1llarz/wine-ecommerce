@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" role="img" aria-label="Fortified wine bottle">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="80%">
+      <stop offset="0%" stop-color="#2e1d15"/>
+      <stop offset="100%" stop-color="#130b08"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#9a5a30"/>
+      <stop offset="45%" stop-color="#7d4422"/>
+      <stop offset="55%" stop-color="#693819"/>
+      <stop offset="100%" stop-color="#4a2710"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" fill="url(#bg)"/>
+  <g>
+    <rect x="276" y="100" width="48" height="74" rx="6" fill="#1c100a"/>
+    <path d="M278 150 h44 v110 q56 26 50 96 v300 q0 24 -24 24 h-96 q-24 0 -24 -24 v-300 q-6 -70 50 -96 z" fill="url(#glass)"/>
+    <rect x="246" y="470" width="108" height="150" rx="4" fill="#f3ece0"/>
+    <rect x="246" y="470" width="108" height="36" rx="4" fill="#c8a24b"/>
+    <line x1="266" y1="528" x2="334" y2="528" stroke="#5e3417" stroke-width="3"/>
+    <line x1="276" y1="552" x2="324" y2="552" stroke="#b9b1a3" stroke-width="3"/>
+    <line x1="276" y1="572" x2="324" y2="572" stroke="#b9b1a3" stroke-width="3"/>
+    <rect x="262" y="150" width="10" height="486" rx="5" fill="#ffffff" opacity="0.12"/>
+  </g>
+</svg>

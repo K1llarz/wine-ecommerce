@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" role="img" aria-label="Sparkling wine bottle">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="80%">
+      <stop offset="0%" stop-color="#2f2a1e"/>
+      <stop offset="100%" stop-color="#13100a"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#3f5436"/>
+      <stop offset="45%" stop-color="#32432b"/>
+      <stop offset="55%" stop-color="#283620"/>
+      <stop offset="100%" stop-color="#1b2615"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" fill="url(#bg)"/>
+  <g>
+    <rect x="270" y="92" width="60" height="92" rx="6" fill="#c8a24b"/>
+    <path d="M276 168 h48 v96 q66 30 58 110 v272 q0 24 -24 24 h-116 q-24 0 -24 -24 v-272 q-8 -80 58 -110 z" fill="url(#glass)"/>
+    <rect x="244" y="486" width="112" height="140" rx="4" fill="#f6f1e6"/>
+    <rect x="244" y="486" width="112" height="34" rx="4" fill="#1c3a2a"/>
+    <line x1="276" y1="566" x2="324" y2="566" stroke="#b08a2e" stroke-width="3"/>
+    <line x1="276" y1="586" x2="324" y2="586" stroke="#b9b1a3" stroke-width="3"/>
+    <circle cx="300" cy="320" r="4" fill="#fdf6df" opacity="0.7"/>
+    <circle cx="288" cy="360" r="3" fill="#fdf6df" opacity="0.6"/>
+    <circle cx="312" cy="392" r="3" fill="#fdf6df" opacity="0.6"/>
+    <circle cx="298" cy="428" r="2.5" fill="#fdf6df" opacity="0.5"/>
+    <rect x="260" y="168" width="9" height="458" rx="4" fill="#ffffff" opacity="0.12"/>
+  </g>
+</svg>

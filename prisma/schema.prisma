@@ -1,0 +1,377 @@
+// Wine E-Commerce — Prisma schema
+// Dev runs on SQLite; the modeling is kept Postgres-portable:
+//   - No native `enum`s or scalar lists (unsupported on SQLite). Enum-like
+//     columns are `String` with allowed values documented inline and enforced
+//     in the app layer via Zod (see src/lib/constants.ts).
+//   - Money is stored as integer cents to avoid float/Decimal issues.
+//   - JSON payloads (address snapshots) are stored as TEXT holding JSON.
+// To move to Postgres: switch the datasource provider to "postgresql",
+// optionally promote the documented String enums to real `enum`s, and migrate.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Users & auth
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// role: CUSTOMER | INVENTORY_STAFF | MANAGER | SUPER_ADMIN
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String? // null for OAuth-only accounts
+  name          String?
+  role          String    @default("CUSTOMER")
+  emailVerified DateTime?
+  dateOfBirth   DateTime? // used for age verification
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  addresses     Address[]
+  orders        Order[]
+  reviews       Review[]
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+  oauthAccounts OAuthAccount[]
+  inventoryLogs InventoryLog[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model OAuthAccount {
+  id                String   @id @default(cuid())
+  userId            String
+  provider          String // "google"
+  providerAccountId String
+  createdAt         DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("oauth_accounts")
+}
+
+/// type: SHIPPING | BILLING
+model Address {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String   @default("SHIPPING")
+  fullName   String
+  line1      String
+  line2      String?
+  city       String
+  state      String?
+  postalCode String
+  country    String   @default("US")
+  phone      String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Catalog reference data
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Wine type: Red | White | Rosé | Sparkling | Dessert | Fortified
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Region {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  country     String
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+
+  products Product[]
+
+  @@index([country])
+  @@map("regions")
+}
+
+model GrapeVarietal {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+
+  products ProductVarietal[]
+
+  @@map("grape_varietals")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Products
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// body: LIGHT | MEDIUM | FULL
+/// sweetness: DRY | OFF_DRY | MEDIUM | SWEET
+/// acidity: LOW | MEDIUM | HIGH
+/// status: DRAFT | ACTIVE | ARCHIVED
+model Product {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  sku         String  @unique
+  description String?
+
+  categoryId String
+  regionId   String?
+
+  producer    String?
+  appellation String?
+  country     String?
+  vintage     Int? // null = non-vintage
+  alcohol     Float? // ABV %
+  volumeMl    Int     @default(750)
+
+  body         String?
+  sweetness    String?
+  acidity      String?
+  tastingNotes String?
+  foodPairings String? // pipe-delimited list, e.g. "Grilled steak|Aged cheese"
+
+  priceCents Int
+  costCents  Int? // admin-only; for profit-margin display
+
+  stockQuantity     Int @default(0)
+  lowStockThreshold Int @default(5)
+
+  status      String  @default("DRAFT")
+  featured    Boolean @default(false)
+  wineOfMonth Boolean @default(false)
+
+  metaTitle       String?
+  metaDescription String?
+
+  avgRating   Float @default(0) // denormalized for sorting
+  reviewCount Int   @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category      Category          @relation(fields: [categoryId], references: [id])
+  region        Region?           @relation(fields: [regionId], references: [id])
+  images        ProductImage[]
+  varietals     ProductVarietal[]
+  reviews       Review[]
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+  orderItems    OrderItem[]
+  inventoryLogs InventoryLog[]
+
+  @@index([categoryId])
+  @@index([regionId])
+  @@index([status])
+  @@index([featured])
+  @@index([priceCents])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  sortOrder Int     @default(0)
+  isPrimary Boolean @default(false)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+model ProductVarietal {
+  id         String @id @default(cuid())
+  productId  String
+  varietalId String
+  percentage Int? // blend percentage, optional
+
+  product  Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  varietal GrapeVarietal @relation(fields: [varietalId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, varietalId])
+  @@index([varietalId])
+  @@map("product_varietals")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reviews
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// status: PENDING | APPROVED | REJECTED
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String
+  rating    Int // 1..5
+  title     String?
+  body      String?
+  status    String   @default("APPROVED")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([productId])
+  @@map("reviews")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cart & wishlist (persisted for logged-in users)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("cart_items")
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("wishlist_items")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Orders
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// status: PENDING | PROCESSING | SHIPPED | DELIVERED | CANCELLED
+/// paymentStatus: UNPAID | PAID | REFUNDED | PARTIALLY_REFUNDED
+model Order {
+  id          String  @id @default(cuid())
+  orderNumber String  @unique
+  userId      String? // null for guest checkout
+  email       String
+
+  status        String @default("PENDING")
+  paymentStatus String @default("UNPAID")
+
+  subtotalCents Int
+  shippingCents Int    @default(0)
+  taxCents      Int    @default(0)
+  totalCents    Int
+  currency      String @default("USD")
+
+  paymentIntentId String? // Stripe PaymentIntent id
+
+  // JSON snapshots (address may change after the order is placed)
+  shippingAddress String? // JSON
+  billingAddress  String? // JSON
+
+  trackingNumber String?
+  carrier        String?
+  notes          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User?       @relation(fields: [userId], references: [id])
+  items OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  productId      String? // null if the product is later deleted
+  nameSnapshot   String
+  skuSnapshot    String
+  priceCents     Int // unit price at purchase time
+  quantity       Int
+  lineTotalCents Int
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Inventory
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// reason: RESTOCK | SALE | ADJUSTMENT | RETURN | DAMAGE
+model InventoryLog {
+  id          String   @id @default(cuid())
+  productId   String
+  change      Int // signed delta, e.g. +24 or -1
+  reason      String
+  note        String?
+  adminUserId String?
+  createdAt   DateTime @default(now())
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  adminUser User?   @relation(fields: [adminUserId], references: [id])
+
+  @@index([productId])
+  @@map("inventory_logs")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Marketing
+// ─────────────────────────────────────────────────────────────────────────────
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("newsletter_subscribers")
+}
