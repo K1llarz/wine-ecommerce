@@ -134,9 +134,9 @@ export async function getProducts(
   if (filters.country) where.country = filters.country;
   if (filters.q) {
     where.OR = [
-      { name: { contains: filters.q } },
-      { producer: { contains: filters.q } },
-      { tastingNotes: { contains: filters.q } },
+      { name: { contains: filters.q, mode: "insensitive" } },
+      { producer: { contains: filters.q, mode: "insensitive" } },
+      { tastingNotes: { contains: filters.q, mode: "insensitive" } },
     ];
   }
 

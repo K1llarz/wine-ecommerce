@@ -5,9 +5,9 @@ const nextConfig: NextConfig = {
   // Pin the workspace root to this project. There is an unrelated lockfile in a
   // parent directory; without this, Next infers the wrong root and over-traces.
   turbopack: { root: path.resolve() },
-  // Native module — keep it external so the bundler doesn't try to inline the
-  // prebuilt binary. Required for the Prisma better-sqlite3 driver adapter.
-  serverExternalPackages: ["better-sqlite3", "@prisma/adapter-better-sqlite3"],
+  // Keep the Postgres driver + Prisma adapter external so the server bundler
+  // doesn't try to inline node-postgres (which uses dynamic requires).
+  serverExternalPackages: ["pg", "@prisma/adapter-pg"],
   images: {
     // Our placeholder bottle art is first-party static SVG; allow next/image to
     // serve it. The CSP keeps these locked down (no scripts execute).
