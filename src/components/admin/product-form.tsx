@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { saveProductAction, type ProductFormState } from "@/app/actions/admin-products";
